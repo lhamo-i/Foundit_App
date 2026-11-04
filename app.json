@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Foundit",
+    "slug": "foundit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FCF7DF",
+    "ios": { "supportsTablet": false },
+    "android": { "edgeToEdgeEnabled": true },
+    "web": { "bundler": "metro" }
+  }
+}
