@@ -25,6 +25,9 @@ export const colors = {
   foundText: '#1D6A34',
   danger: '#B3372F', // reject / delete buttons
   dangerText: '#FFFFFF',
+  pendingBg: '#FFF1CC', // claim waiting for review
+  pendingText: '#7A5A00',
+  overlay: 'rgba(62, 54, 48, 0.45)', // dark layer behind pop-ups
 };
 
 export const spacing = {

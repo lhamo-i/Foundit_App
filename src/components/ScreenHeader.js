@@ -1,60 +1,52 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing } from '../theme/colors';
+import { colors, spacing, typography } from '../theme/colors';
 
-// Top bar of a screen: optional back arrow, centred title, optional right-side button.
-export default function ScreenHeader({ title, onBack, right }) {
+// Top bar for stack screens: back arrow, centred title, optional right-hand button.
+export default function ScreenHeader({ title, onBack, right, showBack = true }) {
+  const navigation = useNavigation();
+  const goBack = onBack || (() => navigation.goBack());
+
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
-      <View style={styles.row}>
-        <View style={styles.side}>
-          {onBack ? (
-            <Pressable
-              onPress={onBack}
-              hitSlop={10}
-              style={styles.circle}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-            >
-              <Ionicons name="arrow-back" size={22} color={colors.text} />
-            </Pressable>
-          ) : null}
-        </View>
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
-        <View style={[styles.side, styles.right]}>{right}</View>
+    <View style={styles.bar}>
+      <View style={styles.side}>
+        {showBack ? (
+          <Pressable
+            onPress={goBack}
+            hitSlop={10}
+            style={styles.iconBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </Pressable>
+        ) : null}
       </View>
-    </SafeAreaView>
+      <Text style={styles.title} numberOfLines={1}>
+        {title}
+      </Text>
+      <View style={[styles.side, styles.sideRight]}>{right || null}</View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { backgroundColor: colors.background },
-  row: {
+  bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    minHeight: 56,
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
   },
-  side: { width: 44 },
-  right: { alignItems: 'flex-end' },
-  circle: {
+  side: { width: 48, justifyContent: 'center' },
+  sideRight: { alignItems: 'flex-end' },
+  iconBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-  },
+  title: { ...typography.heading, flex: 1, textAlign: 'center' },
 });

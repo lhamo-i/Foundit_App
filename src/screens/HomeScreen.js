@@ -1,54 +1,36 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import FilterTabs from '../components/FilterTabs';
-import ItemCard from '../components/ItemCard';
+import ItemGrid from '../components/ItemGrid';
 import EmptyState from '../components/EmptyState';
-import { SAMPLE_ITEMS } from '../data/sampleItems';
-import { padToEven, savedFirst } from '../utils/listHelpers';
-import { useSaved } from '../context/SavedContext';
+import { useData } from '../context/DataContext';
 import { colors, radius, spacing, typography } from '../theme/colors';
 
 export default function HomeScreen({ navigation }) {
-  // "State" = data the screen remembers. When it changes, the screen redraws.
+  const { items, savedIds, toggleSave, unreadCount } = useData();
   const [filter, setFilter] = useState('All');
-  const { isSaved, toggleSave } = useSaved();
 
-  // Keep only the items that match the selected filter
-  const visible = SAMPLE_ITEMS.filter((item) => {
-    if (filter === 'Lost') return item.type === 'lost';
-    if (filter === 'Found') return item.type === 'found';
-    return true;
-  });
-
-  const renderItem = ({ item }) => {
-    if (item.spacer) return <View style={styles.spacer} />;
-    return (
-      <ItemCard
-        item={item}
-        saved={isSaved(item.id)}
-        onToggleSave={() => toggleSave(item.id)}
-        onPress={() => navigation.navigate('ItemDetails', { itemId: item.id })}
-      />
-    );
-  };
+  // Open reports only, newest first, matching the All / Lost / Found filter
+  const visible = items
+    .filter((item) => item.stage !== 'resolved')
+    .filter((item) => {
+      if (filter === 'Lost') return item.type === 'lost';
+      if (filter === 'Found') return item.type === 'found';
+      return true;
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <FlatList
-        data={padToEven(savedFirst(visible, isSaved))}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
+      <ItemGrid
+        items={visible}
+        savedIds={savedIds}
+        onToggleSave={toggleSave}
+        onItemPress={(item) => navigation.navigate('ItemDetails', { itemId: item.id })}
         ListEmptyComponent={
-          <EmptyState
-            title="No items yet"
-            message="Lost and found reports will appear here."
-          />
+          <EmptyState title="No items yet" message="Lost and found reports will appear here." />
         }
         ListHeaderComponent={
           <View>
@@ -61,16 +43,25 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.appName}>Foundit</Text>
                 <Text style={styles.tagline}>Find it. Report it. Get it back.</Text>
               </View>
-              <View style={styles.bell}>
+              <Pressable
+                style={styles.bell}
+                onPress={() => navigation.navigate('Notifications')}
+                accessibilityRole="button"
+                accessibilityLabel={`Notifications, ${unreadCount} unread`}
+              >
                 <Ionicons name="notifications-outline" size={26} color={colors.text} />
-                <View style={styles.bellDot} />
-              </View>
+                {unreadCount > 0 ? (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                  </View>
+                ) : null}
+              </Pressable>
             </View>
 
-            {/* Search bar: tapping it opens the Search tab */}
+            {/* Search bar: tapping it opens the Search tab with the keyboard ready */}
             <Pressable
               style={styles.searchBar}
-              onPress={() => navigation.navigate('Search')}
+              onPress={() => navigation.navigate('Search', { focus: Date.now() })}
               accessibilityRole="button"
               accessibilityLabel="Search items"
             >
@@ -93,9 +84,6 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl },
-  row: { gap: spacing.md, marginBottom: spacing.md },
-  spacer: { flex: 1 },
 
   header: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
   logo: {
@@ -110,15 +98,19 @@ const styles = StyleSheet.create({
   appName: { ...typography.title },
   tagline: { ...typography.caption },
   bell: { padding: spacing.xs },
-  bellDot: {
+  badge: {
     position: 'absolute',
-    top: 4,
-    right: 5,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    top: 0,
+    right: 0,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
     backgroundColor: colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  badgeText: { fontSize: 11, fontWeight: '700', color: colors.dangerText },
 
   searchBar: {
     flexDirection: 'row',

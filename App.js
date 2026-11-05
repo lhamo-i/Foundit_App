@@ -3,9 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
-import { SavedProvider } from './src/context/SavedContext';
-import { SessionProvider } from './src/context/SessionContext';
-import { ClaimsProvider } from './src/context/ClaimsContext';
+import { AuthProvider } from './src/context/AuthContext';
+import { DataProvider } from './src/context/DataContext';
 import { colors } from './src/theme/colors';
 
 // Tell React Navigation to use our palette instead of its default colours.
@@ -21,19 +20,19 @@ const navTheme = {
   },
 };
 
+// AuthProvider = who is logged in.  DataProvider = posts, claims, chats, notifications.
+// (DataProvider must be inside AuthProvider because it needs to know the current user.)
 export default function App() {
   return (
     <SafeAreaProvider>
-      <SavedProvider>
-        <SessionProvider>
-          <ClaimsProvider>
-            <NavigationContainer theme={navTheme}>
-              <StatusBar style="dark" />
-              <AppNavigator />
-            </NavigationContainer>
-          </ClaimsProvider>
-        </SessionProvider>
-      </SavedProvider>
+      <AuthProvider>
+        <DataProvider>
+          <NavigationContainer theme={navTheme}>
+            <StatusBar style="dark" />
+            <AppNavigator />
+          </NavigationContainer>
+        </DataProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

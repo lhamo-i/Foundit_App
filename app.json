@@ -6,7 +6,13 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "backgroundColor": "#FCF7DF",
-    "ios": { "supportsTablet": false },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Foundit needs your photos so you can attach a picture of a lost or found item.",
+        "NSCameraUsageDescription": "Foundit needs the camera so you can take a picture of a lost or found item."
+      }
+    },
     "android": { "edgeToEdgeEnabled": true },
     "web": { "bundler": "metro" }
   }
